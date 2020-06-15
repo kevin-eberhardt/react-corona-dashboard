@@ -1,7 +1,12 @@
 # React Corona-Dashboard
 
+## Prerequisites
+- [NodeJS](https://nodejs.org/de/) / [NPM](https://www.npmjs.com/get-npm)
+- [React](https://reactjs.org/docs/getting-started.html)
 ## Setup
  ```cd react-corona-dashboard```
+
+ ```npm install```
 
  ```npm start```
 
