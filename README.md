@@ -1,4 +1,5 @@
 # React Corona-Dashboard
+See live demo here: [Demo](http://mindcoded.de)
 
 ## Prerequisites
 - [NodeJS](https://nodejs.org/de/) / [NPM](https://www.npmjs.com/get-npm)
