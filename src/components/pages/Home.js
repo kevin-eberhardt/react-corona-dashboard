@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { AppBar, Button, Toolbar, Typography, Tabs, Tab, IconButton, Grid, Link } from '@material-ui/core';
+import { AppBar, Button, Toolbar, Typography, Tabs, Tab, IconButton, Grid, Link, Divider } from '@material-ui/core';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import Germany from './Germany'
-import Overview from './Overview';
 
 
 var d = new Date();
@@ -18,24 +17,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Home(props) {
-  const { match, history } = props;
-  const { params } = match;
-  const { page } = params;
   const classes = useStyles();
-  const tabNameToIndex = {
-    0: "overview",
-    1: "germany"
-  };
-  const indexToTabName = {
-    overview: 0,
-    germany: 1
-  };
-  const [selectedTab, setSelectedTab] = useState(indexToTabName[page]);
-  const handleChange = (event, newValue) => {
-    history.push(`/${tabNameToIndex[newValue]}`);
-    setSelectedTab(newValue);
-
-  }
   
   return (
     <div className={classes.root}>
@@ -46,19 +28,18 @@ export default function Home(props) {
             <GitHubIcon />
           </Button>
           </IconButton>
-          <Typography variant="subtitle" className={classes.title}>
+          <Typography variant="subtitle1" className={classes.title}>
             Corona-Dashboard
           </Typography>
-          <Tabs value={selectedTab} onChange={handleChange} variant="scrollable" scrollButtons="on">
-            <Tab label="Overview" />
-            <Tab label="Germany" />
+          <Tabs variant="scrollable" scrollButtons="on">
+            <Tab label="Germany" value={0} />
           </Tabs>
         </Toolbar>
       </AppBar>
-          {selectedTab === 0 ? <Overview /> : <div />}
-          {selectedTab === 1 ? <Germany /> : <div />}
-    <Grid item xs={12} style={{marginTop: '1em', padding: '1em'}}>
-      &copy; {n} by <Link href="https://github.com/kevin-eberhardt">Kevin Eberhardt</Link>
+      <Germany />
+      <Grid item xs={12} style={{marginTop: '1em', padding: '1em'}}>
+      <Divider />
+      &copy; {n} <Link href="https://github.com/kevin-eberhardt">Kevin Eberhardt</Link>
     </Grid>
     </div>
   );

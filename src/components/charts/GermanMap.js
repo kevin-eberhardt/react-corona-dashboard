@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { Grid, Typography, Table, TableBody, TableCell, TableContainer, TableRow, CircularProgress, TextField, Link } from '@material-ui/core';
+import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, CircularProgress, TextField, Link } from '@material-ui/core';
 import germany_paths from '../geo/germany_paths.json';
 import { scaleLinear } from "d3-scale";
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -11,7 +11,14 @@ export default function GermanMap(props) {
   const [states, setStates] = useState([]);
   const [selectedBL, setSelectedBL] = useState();
   const [selectedLK, setSelectedLK] = useState();
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(true); 
+  const [lastUpdate, setLastUpdate] = useState('2020-10-20')
+  const [germany, setGermany] = useState(
+    {
+      cases: 0,
+      deaths: 0,
+      incidence: 0
+    })
 
   const colorScale = scaleLinear().domain([0, 25000, 50000]).range(["#E7ECF7", "#495C8D", "#21386C"]);
   const numberWithCommas = x => {
@@ -23,19 +30,21 @@ export default function GermanMap(props) {
   }
 
   useEffect(()=>{
-    var resultList = [], dumpList = [];
-    fetch("https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=county,BL,cases,deaths&outSR=4326&f=json")
+    var resultList = [], dumpList = [], germany = {cases: 0, deaths: 0, incidence: 0};
+    fetch("https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=county,BL,cases,deaths,cases7_per_100k,last_update&outSR=4326&f=json")
       .then(res => res.json())
       .then(
         (result) => {
             var i = 0;
             resultList = result.features;
             resultList.forEach(item => {
+              setLastUpdate(item.attributes.last_update);
               dumpList.push({
                 id: i,
                 name: item.attributes.BL,
                 cases: parseInt(0),
                 deaths: parseInt(0),
+                incidence: parseInt(0),
                 lk: []
               })
               i += 1;
@@ -46,33 +55,59 @@ export default function GermanMap(props) {
             blList.forEach(bl => {
               resultList.forEach(item => {
                 if(item.attributes.BL === bl.name) {
+                  germany.cases += item.attributes.cases;
+                  germany.deaths += item.attributes.deaths;
+                  bl.incidence += item.attributes.cases7_per_100k;
                   bl.cases += item.attributes.cases;
                   bl.deaths += item.attributes.deaths;
                   bl.lk.push({
                     name: item.attributes.county,
                     cases: item.attributes.cases,
                     deaths: item.attributes.deaths,
+                    incidence: item.attributes.cases7_per_100k
                   });
                 }
               })
+              bl.incidence = parseFloat(bl.incidence)/parseInt(bl.lk.length);
+              germany.incidence += bl.incidence;
             })
+            germany.incidence = parseFloat(germany.incidence)/parseInt(blList.length);
             setStates(blList);
             setLoading(false);
+            setGermany(germany)
         }
       )
   }, [])
 
   return (
     isLoading ? 
-      <Grid container direction="row" justify="center" alignItems="center" xs={12} style={{marginTop: '3em'}}>
-        <Grid>
-          <CircularProgress disableShrink />
-          <Typography>Please wait while data is loading..</Typography>
+      <Grid container direction="row" justify="center" alignItems="center" style={{marginTop: '3em'}}>
+        <Grid item xs={12}>
+        <Typography align="center">Bitte warten!</Typography>
+          <CircularProgress disableShrink style={{display: 'flex', margin: '0px auto'}} />
+          <Typography align="center">Daten werden geladen..</Typography>
         </Grid>
         </Grid>
      : 
-    <Grid container xs={12}>
-      <Grid item xs={12} sm={12} md={7} >
+    <Grid container>
+      <Grid item xs={12}>
+      <TableContainer>
+                <Table>
+                <TableBody>
+                  <TableRow>
+                  <TableCell align="left"><Typography variant="h6">Deutschland</Typography></TableCell>
+                    <TableCell align="left">Fälle insgesamt</TableCell>
+                    <TableCell align="left"><strong>{numberWithCommas(germany.cases)}</strong></TableCell>
+                    <TableCell align="left">Verstorbene insgesamt</TableCell>
+                    <TableCell align="left"><strong>{numberWithCommas(germany.deaths)}</strong></TableCell>
+                    <TableCell align="left">7-Tage-Inzidenz</TableCell>
+                    <TableCell align="left">{germany.incidence.toFixed(2)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+      </Grid>
+      <Grid item xs={12} sm={12} md={5}>
         <ComposableMap
           projection="geoAzimuthalEqualArea"
           width={props.width}
@@ -104,9 +139,12 @@ export default function GermanMap(props) {
             }
           </Geographies>
         </ComposableMap>
-        <Typography variant="overline" style={{padding: '1em'}}>Data by <Link href="https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/917fc37a709542548cc3be077a786c17_0?geometry=-21.187%2C46.269%2C42.094%2C55.886">Robert Koch-Institut</Link></Typography>
+        <Typography variant="overline" style={{padding: '1em'}}>
+          Letzte Aktualisierung: {lastUpdate} - <Link href="https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/917fc37a709542548cc3be077a786c17_0?geometry=-21.187%2C46.269%2C42.094%2C55.886">Robert Koch-Institut</Link>
+          </Typography>
       </Grid>
-      <Grid item xs={12} sm={12} md={5}>
+      <Grid item xs={12} sm={12} md={7}>
+
         {
           selectedBL ? 
           <Typography>
@@ -115,12 +153,12 @@ export default function GermanMap(props) {
                 <Table>
                 <TableBody>
                   <TableRow>
-                    <TableCell align="left">Cases</TableCell>
+                    <TableCell align="left">Fälle</TableCell>
                     <TableCell align="left"><strong>{numberWithCommas(selectedBL.cases)}</strong></TableCell>
-                    <TableCell align="left">Deaths</TableCell>
+                    <TableCell align="left">Verstorbene</TableCell>
                     <TableCell align="left"><strong>{numberWithCommas(selectedBL.deaths)}</strong></TableCell>
-                    <TableCell align="left">Deathrate</TableCell>
-                    <TableCell align="left"><strong>{((selectedBL.deaths/selectedBL.cases)*100).toFixed(2)} %</strong></TableCell>
+                    <TableCell align="left">7-Tage-Inzidenz</TableCell>
+                    <TableCell align="left">{selectedBL.incidence.toFixed(2)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -138,29 +176,44 @@ export default function GermanMap(props) {
                 <Typography variant="h6">{selectedLK.name}</Typography>
                 <TableContainer>
                   <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Land-/Stadtkreis</TableCell>
+                        <TableCell align="right">Fälle</TableCell>
+                        <TableCell align="right">Verstorbene</TableCell>
+                        <TableCell align="right">7-Tage-Inzidenz</TableCell>
+                      </TableRow>
+                    </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell align="left">Cases</TableCell>
-                        <TableCell align="left">{numberWithCommas(selectedLK.cases)}</TableCell>
-                        <TableCell align="left">Deaths</TableCell>
-                        <TableCell align="left">{numberWithCommas(selectedLK.deaths)}</TableCell>
-                        <TableCell align="left">Deathrate</TableCell>
-                        <TableCell align="left">{((selectedLK.deaths/selectedLK.cases)*100).toFixed(2)} %</TableCell>
+                      <TableCell align="left">{selectedLK.name}</TableCell>
+                        <TableCell align="right">{numberWithCommas(selectedLK.cases)}</TableCell>
+                        <TableCell align="right">{numberWithCommas(selectedLK.deaths)}</TableCell>
+                        <TableCell align="right">{selectedLK.incidence.toFixed(2)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>
               </Typography>
             : 
-              <TableContainer>
+              <TableContainer style={{height: "330px"}}>
                 <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Land-/Stadtkreis</TableCell>
+                    <TableCell align="right">Fälle</TableCell>
+                    <TableCell align="right">Verstorbene</TableCell>
+                    <TableCell align="right">7-Tage-Inzidenz</TableCell>
+                  </TableRow>
+                </TableHead>
                   <TableBody>
-                      {selectedBL.lk.sort((a, b) => (a.name > b.name) ? 1 : -1)
+                      {selectedBL.lk.sort((a, b) => (a.incidence < b.incidence) ? 1 : -1)
                       .map(lk => (
                         <TableRow key={lk.name}>
                           <TableCell component="th" scope="row">{lk.name}</TableCell>
                           <TableCell align="right">{lk.cases}</TableCell>
                           <TableCell align="right">{lk.deaths}</TableCell>
+                          <TableCell align="right">{lk.incidence.toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>  
@@ -170,7 +223,7 @@ export default function GermanMap(props) {
           </Typography>
           :
           <Alert severity="info" style={{marginTop: '1em'}}>
-            Please <strong>click</strong> on a state to see details.
+            Auf ein Bundesland <strong>klicken</strong>, um Details zu sehen.
           </Alert>
         }
       </Grid>

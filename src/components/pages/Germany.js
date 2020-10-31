@@ -4,9 +4,10 @@ import Grid from '@material-ui/core/Grid';
 
 export default function Germany() {
     return (
-      <Grid container xs={12} p={3}>
-        
-          <GermanMap />
+      <Grid container p={3}>
+        <Grid item  xs={12}>
+        <GermanMap height={640}/>
+        </Grid>
       </Grid>
     );
 }
