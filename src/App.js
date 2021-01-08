@@ -2,7 +2,7 @@ import React from 'react';
 import Theme from './Theme';
 import { ThemeProvider } from '@material-ui/styles';
 import './index.css';
-import Home from './components/pages/Home';
+import Home from './components/Home';
 
 function App() {
   return (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, CircularProgress, TextField, Link } from '@material-ui/core';
+import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, CircularProgress, TextField } from '@material-ui/core';
 import germany_paths from '../geo/germany_paths.json';
 import { scaleLinear } from "d3-scale";
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -12,7 +12,6 @@ export default function GermanMap(props) {
   const [selectedBL, setSelectedBL] = useState();
   const [selectedLK, setSelectedLK] = useState();
   const [isLoading, setLoading] = useState(true); 
-  const [lastUpdate, setLastUpdate] = useState('2020-10-20')
   const [germany, setGermany] = useState(
     {
       cases: 0,
@@ -38,7 +37,6 @@ export default function GermanMap(props) {
             var i = 0;
             resultList = result.features;
             resultList.forEach(item => {
-              setLastUpdate(item.attributes.last_update);
               dumpList.push({
                 id: i,
                 name: item.attributes.BL,
@@ -91,11 +89,11 @@ export default function GermanMap(props) {
      : 
     <Grid container>
       <Grid item xs={12}>
+      <Typography variant="h4" align="center">Deutschland</Typography>
       <TableContainer>
-                <Table>
+                <Table size={"small"}>
                 <TableBody>
                   <TableRow>
-                  <TableCell align="left"><Typography variant="h6">Deutschland</Typography></TableCell>
                     <TableCell align="left">Fälle insgesamt</TableCell>
                     <TableCell align="left"><strong>{numberWithCommas(germany.cases)}</strong></TableCell>
                     <TableCell align="left">Verstorbene insgesamt</TableCell>
@@ -139,12 +137,8 @@ export default function GermanMap(props) {
             }
           </Geographies>
         </ComposableMap>
-        <Typography variant="overline" style={{padding: '1em'}}>
-          Letzte Aktualisierung: {lastUpdate} - <Link href="https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/917fc37a709542548cc3be077a786c17_0?geometry=-21.187%2C46.269%2C42.094%2C55.886">Robert Koch-Institut</Link>
-          </Typography>
       </Grid>
       <Grid item xs={12} sm={12} md={7}>
-
         {
           selectedBL ? 
           <Typography>
@@ -158,7 +152,7 @@ export default function GermanMap(props) {
                     <TableCell align="left">Verstorbene</TableCell>
                     <TableCell align="left"><strong>{numberWithCommas(selectedBL.deaths)}</strong></TableCell>
                     <TableCell align="left">7-Tage-Inzidenz</TableCell>
-                    <TableCell align="left">{selectedBL.incidence.toFixed(2)}</TableCell>
+                    <TableCell align="left"><strong>{selectedBL.incidence.toFixed(2)}</strong></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -187,9 +181,9 @@ export default function GermanMap(props) {
                     <TableBody>
                       <TableRow>
                       <TableCell align="left">{selectedLK.name}</TableCell>
-                        <TableCell align="right">{numberWithCommas(selectedLK.cases)}</TableCell>
-                        <TableCell align="right">{numberWithCommas(selectedLK.deaths)}</TableCell>
-                        <TableCell align="right">{selectedLK.incidence.toFixed(2)}</TableCell>
+                        <TableCell align="right"><strong>{numberWithCommas(selectedLK.cases)}</strong></TableCell>
+                        <TableCell align="right"><strong>{numberWithCommas(selectedLK.deaths)}</strong></TableCell>
+                        <TableCell align="right"><strong>{selectedLK.incidence.toFixed(2)}</strong></TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -211,9 +205,9 @@ export default function GermanMap(props) {
                       .map(lk => (
                         <TableRow key={lk.name}>
                           <TableCell component="th" scope="row">{lk.name}</TableCell>
-                          <TableCell align="right">{lk.cases}</TableCell>
-                          <TableCell align="right">{lk.deaths}</TableCell>
-                          <TableCell align="right">{lk.incidence.toFixed(2)}</TableCell>
+                          <TableCell align="right"><strong>{numberWithCommas(lk.cases)}</strong></TableCell>
+                          <TableCell align="right"><strong>{numberWithCommas(lk.deaths)}</strong></TableCell>
+                          <TableCell align="right"><strong>{lk.incidence.toFixed(2)}</strong></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>  
