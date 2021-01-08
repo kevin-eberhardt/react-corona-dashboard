@@ -99,7 +99,7 @@ export default function GermanMap(props) {
                     <TableCell align="left">Verstorbene insgesamt</TableCell>
                     <TableCell align="left"><strong>{numberWithCommas(germany.deaths)}</strong></TableCell>
                     <TableCell align="left">7-Tage-Inzidenz</TableCell>
-                    <TableCell align="left">{germany.incidence.toFixed(2)}</TableCell>
+                    <TableCell align="left"><strong>{germany.incidence.toFixed(2)}</strong></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
