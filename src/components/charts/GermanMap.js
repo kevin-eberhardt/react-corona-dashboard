@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, CircularProgress, TextField } from '@material-ui/core';
+import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, LinearProgress, TextField } from '@material-ui/core';
 import germany_paths from '../geo/germany_paths.json';
 import { scaleLinear } from "d3-scale";
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -79,13 +79,13 @@ export default function GermanMap(props) {
 
   return (
     isLoading ? 
-      <Grid container direction="row" justify="center" alignItems="center" style={{marginTop: '3em'}}>
-        <Grid item xs={12}>
+    <Grid container direction="row" justify="center" alignItems="center" style={{marginTop: '3em'}}>
+      <Grid item xs={12} style={{padding: '2em'}}>
         <Typography align="center">Bitte warten!</Typography>
-          <CircularProgress disableShrink style={{display: 'flex', margin: '0px auto'}} />
-          <Typography align="center">Daten werden geladen..</Typography>
-        </Grid>
-        </Grid>
+        <LinearProgress />
+        <Typography align="center">Daten werden geladen..</Typography>
+      </Grid>
+    </Grid>
      : 
     <Grid container>
       <Grid item xs={12}>
