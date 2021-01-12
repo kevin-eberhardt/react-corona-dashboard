@@ -26,8 +26,11 @@ export default function LineGraph(props) {
   }
   async function getZeitlicherVerlauf() {
     let labels = [];
+    var today = new Date()
+    var last30days = convertToDate(new Date().setDate(today.getDate()-30));
+    console.log(last30days); 
     const b = bundesland.name.toUpperCase();
-    const request = await fetch("https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Covid19_RKI_Sums/FeatureServer/0/query?where=Meldedatum%3Etimestamp%20%272020-12-31%2023:59:59%27%20AND%20Bundesland%20%3D%20%27" + b + "%27&outFields=AnzahlFall,AnzahlTodesfall,Meldedatum,AnzahlGenesen,Bundesland&outSR=4326&f=json")
+    const request = await fetch("https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Covid19_RKI_Sums/FeatureServer/0/query?where=Meldedatum%3Etimestamp%20%27" + last30days + "%2023:59:59%27%20AND%20Bundesland%20%3D%20%27" + b + "%27&outFields=AnzahlFall,AnzahlTodesfall,Meldedatum,AnzahlGenesen,Bundesland&outSR=4326&f=json")
     const json = await request.json()
     const data = json.features;
     var faelle = [], obj = [], datum = [];
@@ -69,7 +72,7 @@ export default function LineGraph(props) {
           }
         ]
       };
-      const height = props.height ? props.height : '50px';
+      const height = props.height ? props.height : '100px';
     useEffect(()=>{
       setBundesland(props.bundesland);
       getZeitlicherVerlauf();
