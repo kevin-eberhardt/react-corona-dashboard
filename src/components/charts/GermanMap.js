@@ -5,19 +5,17 @@ import germany_paths from '../geo/germany_paths.json';
 import { scaleLinear } from "d3-scale";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { Alert } from '@material-ui/lab';
+import {isMobile} from 'react-device-detect';
+import LineGraph from "./LineChart";
+
 
 export default function GermanMap(props) {
   const [center] = useState([193.5, 129.5]);
-  const [states, setStates] = useState([]);
-  const [selectedBL, setSelectedBL] = useState();
-  const [selectedLK, setSelectedLK] = useState();
-  const [isLoading, setLoading] = useState(true); 
-  const [germany, setGermany] = useState(
-    {
-      cases: 0,
-      deaths: 0,
-      incidence: 0
-    })
+  const [states, setStates] = useState(props.states);
+  const [selectedBL, setSelectedBL] = useState(props.selectedBL);
+  const [selectedLK, setSelectedLK] = useState(props.selectedLK);
+  const [isLoading, setLoading] = useState(props.isLoading); 
+  const [germany, setGermany] = useState(props.germany);
 
   const colorScale = scaleLinear().domain([0, 25000, 50000]).range(["#E7ECF7", "#495C8D", "#21386C"]);
   const numberWithCommas = x => {
@@ -28,54 +26,13 @@ export default function GermanMap(props) {
     }
   }
 
-  useEffect(()=>{
-    var resultList = [], dumpList = [], germany = {cases: 0, deaths: 0, incidence: 0};
-    fetch("https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=county,BL,cases,deaths,cases7_per_100k,last_update&outSR=4326&f=json")
-      .then(res => res.json())
-      .then(
-        (result) => {
-            var i = 0;
-            resultList = result.features;
-            resultList.forEach(item => {
-              dumpList.push({
-                id: i,
-                name: item.attributes.BL,
-                cases: parseInt(0),
-                deaths: parseInt(0),
-                incidence: parseInt(0),
-                lk: []
-              })
-              i += 1;
-            })
-            var blList = Array.from(new Set(dumpList.map(a => a.name))).map(name => {
-                return dumpList.find(a => a.name === name);
-              })
-            blList.forEach(bl => {
-              resultList.forEach(item => {
-                if(item.attributes.BL === bl.name) {
-                  germany.cases += item.attributes.cases;
-                  germany.deaths += item.attributes.deaths;
-                  bl.incidence += item.attributes.cases7_per_100k;
-                  bl.cases += item.attributes.cases;
-                  bl.deaths += item.attributes.deaths;
-                  bl.lk.push({
-                    name: item.attributes.county,
-                    cases: item.attributes.cases,
-                    deaths: item.attributes.deaths,
-                    incidence: item.attributes.cases7_per_100k
-                  });
-                }
-              })
-              bl.incidence = parseFloat(bl.incidence)/parseInt(bl.lk.length);
-              germany.incidence += bl.incidence;
-            })
-            germany.incidence = parseFloat(germany.incidence)/parseInt(blList.length);
-            setStates(blList);
-            setLoading(false);
-            setGermany(germany)
-        }
-      )
-  }, [])
+
+  useEffect(() => {
+    setStates(props.states);
+    setSelectedBL(props.selectedBL);
+    setLoading(props.isLoading);
+    setGermany(props.germany);
+  }, [props]);
 
   return (
     isLoading ? 
@@ -87,23 +44,44 @@ export default function GermanMap(props) {
       </Grid>
     </Grid>
      : 
-    <Grid container>
+    <Grid container style={{paddingTop: '1em'}}>
       <Grid item xs={12}>
       <Typography variant="h4" align="center">Deutschland</Typography>
-      <TableContainer>
-                <Table size={"small"}>
-                <TableBody>
-                  <TableRow>
-                    <TableCell align="left">Fälle insgesamt</TableCell>
-                    <TableCell align="left"><strong>{numberWithCommas(germany.cases)}</strong></TableCell>
-                    <TableCell align="left">Verstorbene insgesamt</TableCell>
-                    <TableCell align="left"><strong>{numberWithCommas(germany.deaths)}</strong></TableCell>
-                    <TableCell align="left">7-Tage-Inzidenz</TableCell>
-                    <TableCell align="left"><strong>{germany.incidence.toFixed(2)}</strong></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+
+        {
+          isMobile ?
+            <TableContainer>
+                  <Table size={"small"}>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell width={140} align="left">Erkrankungen</TableCell>
+                      <TableCell align="left"><strong>{numberWithCommas(germany.cases)}</strong></TableCell>
+                      <TableCell width={140} align="left">Todesfälle</TableCell>
+                      <TableCell align="left"><strong>{numberWithCommas(germany.deaths)}</strong></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell align="left">7-Tage-Inzidenz</TableCell>
+                      <TableCell align="left"><strong>{germany.incidence.toFixed(2)}</strong></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+          :
+          <TableContainer>
+                  <Table size={"small"}>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell width={140} align="left">Erkrankungen</TableCell>
+                      <TableCell align="left"><strong>{numberWithCommas(germany.cases)}</strong></TableCell>
+                      <TableCell width={140} align="left">Todesfälle</TableCell>
+                      <TableCell align="left"><strong>{numberWithCommas(germany.deaths)}</strong></TableCell>
+                      <TableCell width={140} align="left">7-Tage-Inzidenz</TableCell>
+                      <TableCell align="left"><strong>{germany.incidence.toFixed(2)}</strong></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+        }
       </Grid>
       <Grid item xs={12} sm={12} md={5}>
         <ComposableMap
@@ -115,7 +93,7 @@ export default function GermanMap(props) {
             center: center
           }}
           >
-          <Geographies geography={germany_paths}>
+          <Geographies geography={germany_paths} className={"germany-map"}>
             {({ geographies }) =>
               geographies
               .filter(geo => geo.properties.NAME_0 === "Germany")
@@ -125,6 +103,7 @@ export default function GermanMap(props) {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
+                    google-analytics-bundesland={d.name}
                     fill={d ? colorScale(d.cases) : "#F5F4F6"}
                     onMouseDown={() => {
                       const { NAME_1 } = geo.properties;
@@ -143,6 +122,7 @@ export default function GermanMap(props) {
           selectedBL ? 
           <Typography>
               <Typography variant="h4">{selectedBL.name}</Typography>
+                <LineGraph bundeslandverlauf bundesland={selectedBL} />
               <TableContainer>
                 <Table>
                 <TableBody>
@@ -173,17 +153,17 @@ export default function GermanMap(props) {
                     <TableHead>
                       <TableRow>
                         <TableCell>Land-/Stadtkreis</TableCell>
-                        <TableCell align="right">Fälle</TableCell>
-                        <TableCell align="right">Verstorbene</TableCell>
+                        <TableCell align="right">Erkrankungen</TableCell>
+                        <TableCell align="right">Todesfälle</TableCell>
                         <TableCell align="right">7-Tage-Inzidenz</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       <TableRow>
                       <TableCell align="left">{selectedLK.name}</TableCell>
-                        <TableCell align="right"><strong>{numberWithCommas(selectedLK.cases)}</strong></TableCell>
-                        <TableCell align="right"><strong>{numberWithCommas(selectedLK.deaths)}</strong></TableCell>
-                        <TableCell align="right"><strong>{selectedLK.incidence.toFixed(2)}</strong></TableCell>
+                        <TableCell align="right">{numberWithCommas(selectedLK.cases)}</TableCell>
+                        <TableCell align="right">{numberWithCommas(selectedLK.deaths)}</TableCell>
+                        <TableCell align="right">{selectedLK.incidence.toFixed(2)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -195,8 +175,8 @@ export default function GermanMap(props) {
                 <TableHead>
                   <TableRow>
                     <TableCell>Land-/Stadtkreis</TableCell>
-                    <TableCell align="right">Fälle</TableCell>
-                    <TableCell align="right">Verstorbene</TableCell>
+                    <TableCell align="right">Erkrankungen</TableCell>
+                    <TableCell align="right">Todesfälle</TableCell>
                     <TableCell align="right">7-Tage-Inzidenz</TableCell>
                   </TableRow>
                 </TableHead>
@@ -205,9 +185,9 @@ export default function GermanMap(props) {
                       .map(lk => (
                         <TableRow key={lk.name}>
                           <TableCell component="th" scope="row">{lk.name}</TableCell>
-                          <TableCell align="right"><strong>{numberWithCommas(lk.cases)}</strong></TableCell>
-                          <TableCell align="right"><strong>{numberWithCommas(lk.deaths)}</strong></TableCell>
-                          <TableCell align="right"><strong>{lk.incidence.toFixed(2)}</strong></TableCell>
+                          <TableCell align="right">{numberWithCommas(lk.cases)}</TableCell>
+                          <TableCell align="right">{numberWithCommas(lk.deaths)}</TableCell>
+                          <TableCell align="right">{lk.incidence.toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>  
