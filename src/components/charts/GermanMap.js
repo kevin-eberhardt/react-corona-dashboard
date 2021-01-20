@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, LinearProgress, TextField } from '@material-ui/core';
+import { Grid, Typography, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, LinearProgress, TextField,  Button, ButtonGroup } from '@material-ui/core';
 import germany_paths from '../geo/germany_paths.json';
 import { scaleLinear } from "d3-scale";
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -16,8 +16,9 @@ export default function GermanMap(props) {
   const [selectedLK, setSelectedLK] = useState(props.selectedLK);
   const [isLoading, setLoading] = useState(props.isLoading); 
   const [germany, setGermany] = useState(props.germany);
+  const [timeRange, setTimeRange] = useState("2020-01-01");
 
-  const colorScale = scaleLinear().domain([0, 25000, 50000]).range(["#E7ECF7", "#495C8D", "#21386C"]);
+  const colorScale = scaleLinear().domain([0, 25000, 250000]).range(["#E7ECF7", "#495C8D", "#21386C"]);
   const numberWithCommas = x => {
     if(x > 0) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -26,6 +27,24 @@ export default function GermanMap(props) {
     }
   }
 
+  const convertToDate = (timestamp) => {
+    var month, day;
+    var date = new Date(timestamp);
+    var year = date.getFullYear();
+    var m = date.getMonth();
+    if (m < 10) {
+      month = "0" + (m + 1)
+    }else {
+      month = m + 1
+    }
+    var d = date.getDate();
+    if (d < 10) {
+      day = "0" + d
+    }else {
+      day = d
+    }
+    return day + '-' + month + '-' + year;
+  }
 
   useEffect(() => {
     setStates(props.states);
@@ -121,9 +140,8 @@ export default function GermanMap(props) {
         {
           selectedBL ? 
           <Typography>
-              <Typography variant="h4">{selectedBL.name}</Typography>
-                <LineGraph bundeslandverlauf bundesland={selectedBL} />
-              <TableContainer>
+              <Typography variant="h5">{selectedBL.name}</Typography>
+              <TableContainer style={{marginBottom: '1em'}}>
                 <Table>
                 <TableBody>
                   <TableRow>
@@ -137,6 +155,9 @@ export default function GermanMap(props) {
                 </TableBody>
               </Table>
             </TableContainer>
+            <div style={{minHeight: "281px", marginBottom: '1em'}}>
+              <LineGraph bundeslandverlauf bundesland={selectedBL} timeRange={timeRange} />
+            </div>
             <Autocomplete
               options={selectedBL.lk}
               getOptionLabel={(option) => option.name}
