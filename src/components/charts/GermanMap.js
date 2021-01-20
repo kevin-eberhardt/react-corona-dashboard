@@ -12,8 +12,8 @@ import LineGraph from "./LineChart";
 export default function GermanMap(props) {
   const [center] = useState([193.5, 129.5]);
   const [states, setStates] = useState(props.states);
-  const [selectedBL, setSelectedBL] = useState(props.selectedBL);
-  const [selectedLK, setSelectedLK] = useState(props.selectedLK);
+  const [selectedBL, setSelectedBL] = useState();
+  const [selectedLK, setSelectedLK] = useState();
   const [isLoading, setLoading] = useState(props.isLoading); 
   const [germany, setGermany] = useState(props.germany);
   const [timeRange, setTimeRange] = useState("2020-01-01");
@@ -48,9 +48,9 @@ export default function GermanMap(props) {
 
   useEffect(() => {
     setStates(props.states);
-    setSelectedBL(props.selectedBL);
     setLoading(props.isLoading);
     setGermany(props.germany);
+    console.log("Erhaltene Bundesländer", states);
   }, [props]);
 
   return (
@@ -156,7 +156,7 @@ export default function GermanMap(props) {
               </Table>
             </TableContainer>
             <div style={{minHeight: "281px", marginBottom: '1em'}}>
-              <LineGraph bundeslandverlauf bundesland={selectedBL} timeRange={timeRange} />
+              <LineGraph bundesland={selectedBL} timeRange={timeRange} />
             </div>
             <Autocomplete
               options={selectedBL.lk}
