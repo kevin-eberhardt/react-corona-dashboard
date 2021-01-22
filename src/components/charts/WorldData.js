@@ -39,11 +39,10 @@ const MapChart = ({ setTooltipContent }) => {
       }
   }
   useEffect(async() => {
-    var newItem, tD = 0, tC = 0, tR = 0, JSONCountryData, countryNamesISO_A3 = [], result;
+    var newItem, tD = 0, tC = 0, tR = 0, JSONCountryData, countryNamesISO_A3 = [];
     const countryList = [];
-    // const res = await axios("https://covid.ourworldindata.org/data/owid-covid-data.json");
-    // const result = res.data;
-    result = test
+    const res = await axios("https://covid.ourworldindata.org/data/owid-covid-data.json");
+    const result = await res.data;
     setData(result)
     console.log(data);
     console.log("Data loaded:", result);
@@ -76,7 +75,8 @@ const MapChart = ({ setTooltipContent }) => {
               (
                 <TableRow>
                 <TableCell>
-                  { data[obj.properties.ISO_A3].location }
+                  Hi
+                  {/* { data[obj.properties.ISO_A3].location } */}
                 </TableCell>
                 </TableRow>
             )))

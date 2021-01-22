@@ -4,6 +4,8 @@ import { ThemeProvider } from '@material-ui/styles';
 import './index.css';
 import Home from './components/Home';
 import Impressum from './components/Impressum';
+import World from './components/World';
+
 import {
   BrowserRouter as Router,
   Route,
@@ -15,6 +17,7 @@ function App() {
           <Router>
             <Switch>
             <Route path="/impressum" component={Impressum} />
+            <Route path="/world" component={World} />
             <Route path="/" component={Home} />
             </Switch>
           </Router>
