@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { Link } from "react-router-dom";
+
 const useStyles = makeStyles((theme) => ({
     title: {
       flexGrow: 1,
     },
   }));
 
-export default function Header(props) {
+
+  export default function Header(props) {
   const [lastUpdate, setLastUpdate] = useState(props.lastUpdate);
 
   useEffect(()=>{
@@ -27,7 +30,7 @@ export default function Header(props) {
         <AppBar position="relative">
         <Toolbar>
           <Typography variant={"subtitle1"} className={classes.title}>
-            Corona-Dashboard
+            <Link to="/" style={{color: "white",textDecoration: "none"}}>Corona-Dashboard</Link>
           </Typography>
         <Typography variant="overline" style={{padding: '1em'}}>
           Stand: {lastUpdate}

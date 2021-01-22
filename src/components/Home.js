@@ -24,21 +24,8 @@ export default function Home(props) {
       deaths: 0,
       incidence: 0
     })
-  function  convertToDate(timestamp) {
-    var month;
-    var date = new Date(timestamp);
-    var year = date.getFullYear();
-    var m = date.getMonth();
-    if (m < 10) {
-      month = "0" + (m + 1)
-    }else {
-      month = m + 1
-    }
-    var day = date.getDate();
-    return day + '-' + month + '-' + year;
-  }
   async function getData() {
-    var resultList = [], dumpList = [], germany = {cases: 0, deaths: 0, incidence: 0}, i = 0;
+    var resultList = [], germany = {cases: 0, deaths: 0, incidence: 0};
     const request = await fetch("https://mindcoded-backend.herokuapp.com/all")
     const json = await request.json()
       json.forEach(item => {
@@ -53,7 +40,6 @@ export default function Home(props) {
           germany.cases += parseInt(item.cases);
           germany.deaths += parseInt(item.deaths);
           germany.incidence += parseInt(item.incidence);
-          i += 1;
       })
       germany.incidence = germany.incidence/resultList.length
       setStates(resultList);
